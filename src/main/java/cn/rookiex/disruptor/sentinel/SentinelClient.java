@@ -110,7 +110,7 @@ public class SentinelClient implements ThreadStatusInfo {
                 if (updateLock.tryLock()) {
                     if (time > old.getSecondTime()) {
                         try {
-                            if (idx % checkInterval == 0)
+                            if (idx % (checkInterval - 1) == 0 && idx != 0)
                                 noticeEvent = getNoticeEvent(time);
                             old.reSet(time);
                             break;
