@@ -13,7 +13,7 @@ import cn.rookiex.disruptor.sentinel.SentinelEvent;
 public class ProportionStrategy implements RegulateStrategy {
 
     private static int WINDOWS_COUNT = 3;
-    private static int IDLE_THRESHOLD = 50;
+    private static int IDLE_THRESHOLD = 2;
 
     public static void setWindowsCount(int windowsCount) {
         WINDOWS_COUNT = windowsCount;
@@ -61,11 +61,17 @@ public class ProportionStrategy implements RegulateStrategy {
             updateCount += needAddThread;
         } else {
             //如果没有堆积并且没有线程空闲,并且剩余总量不到100
-            if (!isThreadRunOut && totalDifference < IDLE_THRESHOLD) {
+            if (!isThreadRunOut && totalDifference < IDLE_THRESHOLD * totalThreadCount) {
                 updateCount -= totalThreadCount - runThreadCount;
             }
         }
         System.out.println("isFull=="+isFull + " ,runOut=="+isThreadRunOut + ",updateThread == " + updateCount);
+        System.out.println("totalDifference = " + totalDifference + " ,recentDifference = " + sentinelEvent.getRecentDifference()
+            + " ,r produce = " + sentinelEvent.getRecentProduceCount()
+            + " ,r consume = " + sentinelEvent.getRecentConsumeCount()
+            + " ,t thread = " + totalThreadCount
+            + " ,r thread = " + runThreadCount
+        );
         return updateCount;
     }
 }

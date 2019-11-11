@@ -1,4 +1,4 @@
-package cn.rookiex.disruptor;
+package cn.rookiex.disruptor.example;
 
 import cn.rookiex.disruptor.core.SentinelHandler;
 import cn.rookiex.disruptor.core.HandlerEvent;
@@ -10,9 +10,10 @@ import cn.rookiex.disruptor.sentinel.SentinelClient;
  * @Describe :
  * @version:
  */
-public class SentinelHandlerImpl extends SentinelHandler {
-    public SentinelHandlerImpl(String name, SentinelClient sentinelClient) {
-        super(name, sentinelClient);
+public class DefaultSentinelHandler extends SentinelHandler {
+
+    public DefaultSentinelHandler(SentinelClient sentinelClient) {
+        super(sentinelClient);
     }
 
     @Override
@@ -20,7 +21,7 @@ public class SentinelHandlerImpl extends SentinelHandler {
         int id = event.getId();
         String name = event.getName();
         Thread.sleep(20);
-        if (id % 100 == 0)
+        if (id % 1000 == 0)
             System.out.println(("connect ping == " + id + " name == " + name + "  thread ==> " + Thread.currentThread().getName()));
     }
 }

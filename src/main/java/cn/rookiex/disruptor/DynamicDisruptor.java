@@ -1,8 +1,10 @@
 package cn.rookiex.disruptor;
 
+import cn.rookiex.disruptor.core.HandlerFactory;
 import cn.rookiex.disruptor.core.SentinelHandler;
 import cn.rookiex.disruptor.core.DynamicConsumer;
 import cn.rookiex.disruptor.core.HandlerEvent;
+import cn.rookiex.disruptor.example.DefaultHandlerFactory;
 import cn.rookiex.disruptor.sentinel.SentinelClient;
 import cn.rookiex.disruptor.sentinel.SentinelEvent;
 import cn.rookiex.disruptor.sentinel.SentinelListener;
@@ -94,13 +96,14 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
      */
     private AtomicInteger threadName = new AtomicInteger();
 
-
-
-
+    /**
+     * handler 工厂
+     */
+    private HandlerFactory handlerFactory = new DefaultHandlerFactory();
 
     /**
      * 默认的处理策略是比例控制
-     * */
+     */
     private RegulateStrategy strategy = new ProportionStrategy();
 
     public Disruptor<HandlerEvent> getDisruptor() {
@@ -115,8 +118,9 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
         this.exceptionHandler = exceptionHandler;
     }
 
-    public SentinelClient getSentinelClient() {
-        return sentinelClient;
+    public void init(int bufferSize, SentinelClient sentinelClient, HandlerFactory handlerFactory) {
+        this.handlerFactory = handlerFactory;
+        init(bufferSize, sentinelClient);
     }
 
     public void init(int bufferSize, SentinelClient sentinelClient) {
@@ -124,9 +128,10 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
         this.handlers = new SentinelHandler[maxSize];
         this.availableArray = new AtomicIntegerArray(maxSize);
         this.sentinelClient = sentinelClient;
+        this.handlerFactory.setSentinelClient(sentinelClient);
         this.sentinelClient.addListener(this);
 
-        this.executor =  new ThreadPoolExecutor(coreSize, maxSize,
+        this.executor = new ThreadPoolExecutor(coreSize, maxSize,
                 120L, TimeUnit.SECONDS,
                 new SynchronousQueue<>(),
                 r -> {
@@ -162,16 +167,13 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
     }
 
     private SentinelHandler createHandler() {
-        return new SentinelHandlerImpl(name, sentinelClient);
+        return handlerFactory.createHandler();
     }
 
     private WorkProcessor<HandlerEvent> createProcessor(SentinelHandler disruptorHandler) {
         RingBuffer<HandlerEvent> ringBuffer = disruptor.getRingBuffer();
         return new WorkProcessor<>(ringBuffer, ringBuffer.newBarrier(), disruptorHandler, exceptionHandler, workSequence);
     }
-
-
-
 
     @Override
     public void incrConsumer() {
@@ -276,60 +278,14 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
 
     @Override
     public void notice(SentinelEvent sentinelEvent) {
-        strategy.regulate(this,sentinelEvent);
-
-        int recentConsumeCount = sentinelEvent.getRecentConsumeCount();
-        int recentProduceCount = sentinelEvent.getRecentProduceCount();
-        int totalConsumeCount = sentinelEvent.getTotalConsumeCount();
-        int totalProduceCount = sentinelEvent.getTotalProduceCount();
-        int millionCount = sentinelEvent.getMillionCount();
-        int totalThreadCount = sentinelEvent.getTotalThreadCount();
-        int runThreadCount = sentinelEvent.getRunThreadCount();
-
-        System.out.println("time ==> " + sentinelEvent.getTime()
-                + " ,t produce ==> " + (totalProduceCount + millionCount)
-                + " ,t consume ==> " + (totalConsumeCount + millionCount)
-                + " ,t difference ==> " + (totalProduceCount - totalConsumeCount)
-                + " ,r produce ==> " + (recentProduceCount)
-                + " ,r consume ==> " + (recentConsumeCount)
-                + " ,r difference ==> " + (recentProduceCount - recentConsumeCount)
-                + " ,runThread ==> " + (runThreadCount)
-                + " ,total ==> " + (totalThreadCount)
-        );
-//        int recentDifference = recentProduceCount - recentConsumeCount;
-//        int totalDifference = totalProduceCount - totalConsumeCount;
-//
-//        //堆积不多的定义是  不到线程数 * 10的数量
-//        if (totalDifference <= (totalThreadCount * 10)) {
-//            //堆积不多,并且没有增多的趋势. 这个时候可以开始缩减线程
-//            if (recentDifference < (totalThreadCount * 10)) {
-//                System.out.println("remove consumer , run thread ==>" + totalThreadCount);
-//                decrConsumer();
-//            }
-//        } else {
-//            //如果堆积很多,并且消灭速度不够快的话
-//            if (recentDifference > 0){
-//                //说明还在增多,但是速度可能在下降
-//
-//            }
-//            if (totalDifference + recentDifference > (totalThreadCount * 100)) {
-//                int b = (totalDifference + recentDifference) / (totalThreadCount * 100);
-//                System.out.println("add consumer , add thread ==> " + b + "  run thread ==>" + totalThreadCount);
-//                for (int i = 0; i < b; i++) {
-//                    incrConsumer();
-//                }
-//            } else {
-//                System.out.println("add consumer , run thread ==>" + totalThreadCount);
-//                incrConsumer();
-//            }
-//        }
-    }
-
-    public RegulateStrategy getStrategy() {
-        return strategy;
+        strategy.regulate(this, sentinelEvent);
     }
 
     public void setStrategy(RegulateStrategy strategy) {
         this.strategy = strategy;
+    }
+
+    public void setHandlerFactory(HandlerFactory handlerFactory) {
+        this.handlerFactory = handlerFactory;
     }
 }

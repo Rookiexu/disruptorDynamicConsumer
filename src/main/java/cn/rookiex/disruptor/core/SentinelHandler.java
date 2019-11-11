@@ -17,10 +17,8 @@ import java.util.concurrent.CountDownLatch;
 public abstract class SentinelHandler implements WorkHandler<HandlerEvent>, LifecycleAware, ThreadStatusInfo, ConsumeStatusInfo {
     private SentinelClient sentinelClient;
 
-    private String name;
 
-    public SentinelHandler(String name, SentinelClient sentinelClient) {
-        this.name = name;
+    public SentinelHandler(SentinelClient sentinelClient) {
         this.sentinelClient = sentinelClient;
     }
 
@@ -45,25 +43,21 @@ public abstract class SentinelHandler implements WorkHandler<HandlerEvent>, Life
 
     public abstract void deal(HandlerEvent event) throws Exception;
 
-    private final CountDownLatch shutdownLatch = new CountDownLatch(1);
+    private CountDownLatch shutdownLatch = new CountDownLatch(1);
 
     @Override
     public void onStart() {
-        threadRun();
+        threadReady();
     }
 
     @Override
     public void onShutdown() {
-        shutdownLatch.countDown();
         threadShutDown();
+        shutdownLatch.countDown();
     }
 
     public void awaitShutdown() throws InterruptedException {
         shutdownLatch.await();
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     @Override
