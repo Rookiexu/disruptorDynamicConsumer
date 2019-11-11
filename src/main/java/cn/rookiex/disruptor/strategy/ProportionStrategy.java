@@ -6,7 +6,8 @@ import cn.rookiex.disruptor.sentinel.SentinelEvent;
 /**
  * @Author : Rookiex
  * @Date : Created in 2019/11/10 19:27
- * @Describe :比例调节
+ * @Describe :比例调节策略,如果WINDOWS_COUNT时间窗口内不能处理玩所有消息,并且线程全部在运行中,线程比例增加
+ * 如果线程运行不满,并且总的任务剩余小于IDLE_THRESHOLD,移除空闲状态线程
  * @version: 1.0
  */
 public class ProportionStrategy implements RegulateStrategy {

@@ -6,7 +6,7 @@ import cn.rookiex.disruptor.sentinel.SentinelEvent;
 /**
  * @Author : Rookiex
  * @Date : Created in 2019/11/10 19:28
- * @Describe :
+ * @Describe : 调节的策略类
  * @version: 1.0
  */
 public interface RegulateStrategy {
