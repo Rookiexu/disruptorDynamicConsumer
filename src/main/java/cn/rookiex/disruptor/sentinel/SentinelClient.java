@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @Describe :
  * @version: 1.0
  */
-public class SentinelClient {
+public class SentinelClient implements ThreadStatusInfo {
 
     /**
      * 默认一个小窗口大小5秒
@@ -161,37 +161,47 @@ public class SentinelClient {
 
     private Lock lock = new ReentrantLock();
 
+    /**
+     * 缩小记录值,保证不会溢出
+     */
     private void checkTotalCount() {
         int a = totalConsumeCount.get();
         int b = totalProduceCount.get();
         if (a > MILLION && b > MILLION) {
-            try {
-                lock.lock();
-                a = totalConsumeCount.get();
-                b = totalProduceCount.get();
-                if (a > MILLION && b > MILLION) {
-                    totalProduceCount.addAndGet(-MILLION);
-                    totalConsumeCount.addAndGet(-MILLION);
-                    millionCount.incrementAndGet();
+            if (lock.tryLock()) {
+                try {
+                    a = totalConsumeCount.get();
+                    b = totalProduceCount.get();
+                    if (a > MILLION && b > MILLION) {
+                        totalProduceCount.addAndGet(-MILLION);
+                        totalConsumeCount.addAndGet(-MILLION);
+                        millionCount.incrementAndGet();
+                    }
+                } finally {
+                    lock.unlock();
                 }
-            } finally {
-                lock.unlock();
+            } else {
+                Thread.yield();
             }
         }
     }
 
+    @Override
     public void threadRun() {
         runThreadCount.incrementAndGet();
     }
 
+    @Override
     public void threadWait() {
         runThreadCount.decrementAndGet();
     }
 
+    @Override
     public void threadReady() {
         totalThreadCount.incrementAndGet();
     }
 
+    @Override
     public void threadShutDown() {
         totalThreadCount.decrementAndGet();
     }
