@@ -1,6 +1,6 @@
 package cn.rookiex.disruptor.strategy;
 
-import cn.rookiex.disruptor.core.DynamicDisruptor;
+import cn.rookiex.disruptor.DynamicDisruptor;
 import cn.rookiex.disruptor.sentinel.SentinelEvent;
 
 /**

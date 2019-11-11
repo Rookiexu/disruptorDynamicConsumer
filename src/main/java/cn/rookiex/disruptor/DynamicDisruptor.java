@@ -1,5 +1,8 @@
-package cn.rookiex.disruptor.core;
+package cn.rookiex.disruptor;
 
+import cn.rookiex.disruptor.core.SentinelHandler;
+import cn.rookiex.disruptor.core.DynamicConsumer;
+import cn.rookiex.disruptor.core.HandlerEvent;
 import cn.rookiex.disruptor.sentinel.SentinelClient;
 import cn.rookiex.disruptor.sentinel.SentinelEvent;
 import cn.rookiex.disruptor.sentinel.SentinelListener;
@@ -69,7 +72,7 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
     /**
      * 工作的handler数组,和processor数组一一对应
      */
-    private DynamicHandler[] handlers;
+    private SentinelHandler[] handlers;
 
     /**
      * 和processor,handler一一对应,标识位置上是否空闲,用Atomic封装了cas操作
@@ -118,7 +121,7 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
 
     public void init(int bufferSize, SentinelClient sentinelClient) {
         this.processors = new WorkProcessor[maxSize];
-        this.handlers = new DynamicHandler[maxSize];
+        this.handlers = new SentinelHandler[maxSize];
         this.availableArray = new AtomicIntegerArray(maxSize);
         this.sentinelClient = sentinelClient;
         this.sentinelClient.addListener(this);
@@ -139,7 +142,7 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
         });
 
         for (int i = 0; i < initSize; i++) {
-            DynamicHandler handlerEvent = createHandler();
+            SentinelHandler handlerEvent = createHandler();
             handlers[i] = handlerEvent;
             processors[i] = createProcessor(handlerEvent);
             updateUseState(i, USED);
@@ -158,11 +161,11 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
         }
     }
 
-    private DynamicHandler createHandler() {
-        return new DynamicHandler(name, sentinelClient);
+    private SentinelHandler createHandler() {
+        return new SentinelHandlerImpl(name, sentinelClient);
     }
 
-    private WorkProcessor<HandlerEvent> createProcessor(DynamicHandler disruptorHandler) {
+    private WorkProcessor<HandlerEvent> createProcessor(SentinelHandler disruptorHandler) {
         RingBuffer<HandlerEvent> ringBuffer = disruptor.getRingBuffer();
         return new WorkProcessor<>(ringBuffer, ringBuffer.newBarrier(), disruptorHandler, exceptionHandler, workSequence);
     }
@@ -178,11 +181,11 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
             System.out.println("no available index exits ==> ");
         } else {
             RingBuffer<HandlerEvent> ringBuffer = disruptor.getRingBuffer();
-            DynamicHandler disruptorHandler = createHandler();
+            SentinelHandler disruptorHandler = createHandler();
             WorkProcessor<HandlerEvent> processor = createProcessor(disruptorHandler);
 
             WorkProcessor processor1 = processors[nextUnUsed];
-            DynamicHandler handler = handlers[nextUnUsed];
+            SentinelHandler handler = handlers[nextUnUsed];
             //容错,但实际上不应该出现,出现就是严重bug
             if (processor1 != null || handler != null) {
                 System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -218,7 +221,7 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
         } else {
             RingBuffer<HandlerEvent> ringBuffer = disruptor.getRingBuffer();
             WorkProcessor processor = processors[nextUnUsed];
-            DynamicHandler handler = handlers[nextUnUsed];
+            SentinelHandler handler = handlers[nextUnUsed];
             if (processor == null || handler == null) {
                 System.out.println("remove disruptor thread ,handler == " + handler + " ,processor == " + processor);
             }

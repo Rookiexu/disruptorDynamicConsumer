@@ -1,6 +1,8 @@
 package cn.rookiex.disruptor.core;
 
+import cn.rookiex.disruptor.sentinel.ConsumeStatusInfo;
 import cn.rookiex.disruptor.sentinel.SentinelClient;
+import cn.rookiex.disruptor.sentinel.ThreadStatusInfo;
 import com.lmax.disruptor.LifecycleAware;
 import com.lmax.disruptor.WorkHandler;
 
@@ -12,12 +14,12 @@ import java.util.concurrent.CountDownLatch;
  * @Describe :
  * @version:
  */
-public class DynamicHandler implements WorkHandler<HandlerEvent>, LifecycleAware {
+public abstract class SentinelHandler implements WorkHandler<HandlerEvent>, LifecycleAware, ThreadStatusInfo, ConsumeStatusInfo {
     private SentinelClient sentinelClient;
 
     private String name;
 
-    public DynamicHandler(String name, SentinelClient sentinelClient) {
+    public SentinelHandler(String name, SentinelClient sentinelClient) {
         this.name = name;
         this.sentinelClient = sentinelClient;
     }
@@ -31,31 +33,29 @@ public class DynamicHandler implements WorkHandler<HandlerEvent>, LifecycleAware
     @Override
     public void onEvent(HandlerEvent event) throws Exception {
         try {
-            sentinelClient.threadRun();
-            int id = event.getId();
-            String name = event.getName();
-            Thread.sleep(20);
-            if (id % 100 == 0)
-                System.out.println(("connect ping == " + id + " name == " + name + "  thread ==> " + Thread.currentThread().getName()));
+            threadRun();
+            deal(event);
         } catch (Exception e) {
             System.out.println("deal transmit err ");
         } finally {
-            sentinelClient.addConsumeCount();
-            sentinelClient.threadWait();
+            addConsumeCount();
+            threadWait();
         }
     }
+
+    public abstract void deal(HandlerEvent event) throws Exception;
 
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
 
     @Override
     public void onStart() {
-        sentinelClient.threadReady();
+        threadRun();
     }
 
     @Override
     public void onShutdown() {
         shutdownLatch.countDown();
-        sentinelClient.threadShutDown();
+        threadShutDown();
     }
 
     public void awaitShutdown() throws InterruptedException {
@@ -64,5 +64,35 @@ public class DynamicHandler implements WorkHandler<HandlerEvent>, LifecycleAware
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public void threadRun() {
+        sentinelClient.threadRun();
+    }
+
+    @Override
+    public void threadWait() {
+        sentinelClient.threadWait();
+    }
+
+    @Override
+    public void threadReady() {
+        sentinelClient.threadReady();
+    }
+
+    @Override
+    public void threadShutDown() {
+        sentinelClient.threadShutDown();
+    }
+
+    @Override
+    public void addConsumeCount() {
+        sentinelClient.addConsumeCount();
+    }
+
+    @Override
+    public void addProduceCount() {
+
     }
 }

@@ -1,6 +1,5 @@
 package cn.rookiex.disruptor;
 
-import cn.rookiex.disruptor.core.DynamicDisruptor;
 import cn.rookiex.disruptor.sentinel.SentinelClient;
 
 import java.util.concurrent.CountDownLatch;

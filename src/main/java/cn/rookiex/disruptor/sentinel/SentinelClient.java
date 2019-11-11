@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @Describe :
  * @version: 1.0
  */
-public class SentinelClient implements ThreadStatusInfo {
+public class SentinelClient implements ThreadStatusInfo,ConsumeStatusInfo {
 
     /**
      * 默认一个小窗口大小5秒
@@ -87,6 +87,7 @@ public class SentinelClient implements ThreadStatusInfo {
         this.listenerList.add(sentinelListener);
     }
 
+    @Override
     public void addConsumeCount() {
         totalConsumeCount.incrementAndGet();
         checkTotalCount();
@@ -151,6 +152,7 @@ public class SentinelClient implements ThreadStatusInfo {
         return sentinelEvent;
     }
 
+    @Override
     public void addProduceCount() {
         totalProduceCount.incrementAndGet();
         checkTotalCount();
