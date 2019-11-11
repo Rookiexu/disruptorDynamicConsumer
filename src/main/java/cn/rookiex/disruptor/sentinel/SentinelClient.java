@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SentinelClient {
 
     /**
-     * 默认窗口大小5秒
+     * 默认一个小窗口大小5秒
      */
     public static final int WINDOWS_LENGTH = 3 * 1000;
 
@@ -25,7 +25,6 @@ public class SentinelClient {
      * 默认窗口数量 10个  3*10 == 30秒 //默认的检测窗口也是12个开始检测
      */
     public static final int WINDOWS_SIZE = 10;
-
 
     private static final int MILLION = 1000000;
 
@@ -35,7 +34,6 @@ public class SentinelClient {
 
     private AtomicInteger millionCount = new AtomicInteger();
 
-    private AtomicLong lastWindowsTime = new AtomicLong();
     private int windowsLength;
     private int windowsSize;
     private int checkInterval;
@@ -54,7 +52,7 @@ public class SentinelClient {
      */
     private AtomicInteger totalThreadCount = new AtomicInteger();
 
-    //暂时不用,因为滑动窗口处理,线程修改的策略算法会有延迟误差
+    //暂时不用,因为滑动窗口算法,在策略算法的反馈上会有延迟误差,导致频繁增减线程
     @Deprecated
     public SentinelClient(int windowsLength, int windowsSize, int checkInterval) {
         this.windowsLength = windowsLength;
@@ -63,7 +61,7 @@ public class SentinelClient {
         init();
     }
 
-    //windowsSize == checkInterval 的本质就是固定窗口
+    //windowsSize == checkInterval 其实就是固定窗口算法,固定窗口是滑动窗口的一个特例
     public SentinelClient(int windowsLength, int windowsSize) {
         this.windowsLength = windowsLength;
         this.windowsSize = windowsSize;
