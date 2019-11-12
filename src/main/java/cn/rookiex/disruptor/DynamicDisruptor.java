@@ -8,6 +8,7 @@ import cn.rookiex.disruptor.example.DefaultHandlerFactory;
 import cn.rookiex.disruptor.sentinel.SentinelClient;
 import cn.rookiex.disruptor.sentinel.SentinelEvent;
 import cn.rookiex.disruptor.sentinel.SentinelListener;
+import cn.rookiex.disruptor.strategy.PIDStrategy;
 import cn.rookiex.disruptor.strategy.ProportionStrategy;
 import cn.rookiex.disruptor.strategy.RegulateStrategy;
 import com.lmax.disruptor.*;
@@ -104,7 +105,7 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
     /**
      * 默认的处理策略是比例控制
      */
-    private RegulateStrategy strategy = new ProportionStrategy();
+    private RegulateStrategy strategy = new PIDStrategy();
 
     public Disruptor<HandlerEvent> getDisruptor() {
         return disruptor;

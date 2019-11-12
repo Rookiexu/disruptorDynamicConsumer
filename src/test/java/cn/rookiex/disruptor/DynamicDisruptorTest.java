@@ -17,12 +17,12 @@ public class DynamicDisruptorTest {
         server.start();
 
         for (int i = 0; i < produceSzie; i++) {
-            startPublishEvent(server, countDownLatch, 100000, "produce=" + i);
+            startPublishEvent(server, countDownLatch, 1000000, "produce=" + i);
         }
 
         try {
             for (int i = 0; i < produceSzie; i++) {
-                Thread.sleep(12000);
+                Thread.sleep(120000);
                 System.out.println("添加生产者========================>"+i);
                 startPublishEvent(server, countDownLatch, 10000, "produce=" + i);
             }

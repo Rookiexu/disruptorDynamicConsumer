@@ -19,4 +19,16 @@ public interface RegulateStrategy {
      * 获得调节的数量
      * */
     int getNeedUpdateCount(SentinelEvent sentinelEvent);
+
+    static void updateThreadCount(DynamicDisruptor dynamicDisruptor, int needUpdateCount) {
+        if (needUpdateCount > 0) {
+            for (int i = 0; i < needUpdateCount; i++) {
+                dynamicDisruptor.incrConsumer();
+            }
+        } else if (needUpdateCount < 0) {
+            for (int i = 0; i < -needUpdateCount; i++) {
+                dynamicDisruptor.decrConsumer();
+            }
+        }
+    }
 }
