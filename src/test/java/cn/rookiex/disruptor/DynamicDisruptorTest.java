@@ -9,9 +9,9 @@ public class DynamicDisruptorTest {
     @org.junit.Test
     public void getDisruptor() {
 
-        int produceSzie = 5;
+        int produceSzie = 10;
         CountDownLatch countDownLatch = new CountDownLatch(produceSzie * 2);
-        final DynamicDisruptor server = new DynamicDisruptor("server", 16, 16, 128);
+        final DynamicDisruptor server = new DynamicDisruptor("server", 16, 16, 512);
         SentinelClient sentinelClient = new SentinelClient(1000,5);
         server.init(1024 * 1024,sentinelClient);
         server.start();
@@ -22,9 +22,9 @@ public class DynamicDisruptorTest {
 
         try {
             for (int i = 0; i < produceSzie; i++) {
-                Thread.sleep(120000);
+                Thread.sleep(5000);
                 System.out.println("添加生产者========================>"+i);
-                startPublishEvent(server, countDownLatch, 10000, "produce=" + i);
+                startPublishEvent(server, countDownLatch, 100000, "produce=" + i);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -72,7 +72,7 @@ public class DynamicDisruptorTest {
                     event.setId(finalI);
                 });
                 try {
-                    Thread.sleep(5);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

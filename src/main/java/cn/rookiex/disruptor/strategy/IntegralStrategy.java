@@ -12,7 +12,7 @@ import cn.rookiex.disruptor.sentinel.SentinelEvent;
 public class IntegralStrategy implements RegulateStrategy {
     @Override
     public void regulate(DynamicDisruptor dynamicDisruptor, SentinelEvent sentinelEvent) {
-
+        RegulateStrategy.updateThreadCount(dynamicDisruptor, getNeedUpdateCount(sentinelEvent));
     }
 
     @Override

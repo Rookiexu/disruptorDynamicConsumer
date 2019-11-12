@@ -12,28 +12,33 @@ import cn.rookiex.disruptor.sentinel.SentinelEvent;
 public class SimpleStrategy implements RegulateStrategy {
     @Override
     public void regulate(DynamicDisruptor dynamicDisruptor, SentinelEvent sentinelEvent) {
-
+        RegulateStrategy.updateThreadCount(dynamicDisruptor, getNeedUpdateCount(sentinelEvent));
     }
 
     @Override
     public int getNeedUpdateCount(SentinelEvent sentinelEvent) {
-        int recentConsumeCount = sentinelEvent.getRecentConsumeCount();
-        int recentProduceCount = sentinelEvent.getRecentProduceCount();
-
-        //thread info
-        int totalThreadCount = sentinelEvent.getTotalThreadCount();
+        int totalDifference = sentinelEvent.getTotalDifference();
         int runThreadCount = sentinelEvent.getRunThreadCount();
+        int totalThreadCount = sentinelEvent.getTotalThreadCount();
 
+        System.out.println("t diff == " + totalDifference
+                + "  r diff == " + sentinelEvent.getRecentDifference()
+                + "  r produce == " + sentinelEvent.getRecentProduceCount()
+                + "  r consume == " + sentinelEvent.getRecentConsumeCount()
+                + "  r thread == " + sentinelEvent.getRunThreadCount()
+                + "  t thread == " + sentinelEvent.getTotalThreadCount()
+        );
         int updateCount = 0;
+        if (totalDifference < sentinelEvent.getRecentConsumeCount() && runThreadCount < totalThreadCount) {
+            updateCount -= (totalThreadCount - runThreadCount) / 2 + (totalThreadCount - runThreadCount) % 2;
+        }
 
-        boolean isThreadRunOut = runThreadCount == totalThreadCount;
-        if (isThreadRunOut) {
-            if (recentProduceCount > recentConsumeCount){
-                //保留两位小数
-                int needAddThread = (recentProduceCount * 100 / recentConsumeCount * runThreadCount)  / 100 - runThreadCount;
-                updateCount += needAddThread;
+        if (runThreadCount == totalThreadCount) {
+            if (sentinelEvent.getRecentProduceCount() > sentinelEvent.getRecentConsumeCount()) {
+                updateCount += 1;
             }
         }
+
 
         return updateCount;
     }

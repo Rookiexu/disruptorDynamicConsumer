@@ -15,6 +15,16 @@ public class PIDStrategy implements RegulateStrategy {
     private DerivativeStrategy derivativeStrategy = new DerivativeStrategy();
     private SimpleStrategy simpleStrategy = new SimpleStrategy();
 
+    private int p = 66;
+    private int i = 66;
+    private int d = 66;
+
+    public void setPID(int p, int i, int d) {
+        this.p = p;
+        this.i = i;
+        this.d = d;
+    }
+
     @Override
     public void regulate(DynamicDisruptor dynamicDisruptor, SentinelEvent sentinelEvent) {
         RegulateStrategy.updateThreadCount(dynamicDisruptor, getNeedUpdateCount(sentinelEvent));
@@ -24,10 +34,10 @@ public class PIDStrategy implements RegulateStrategy {
     public int getNeedUpdateCount(SentinelEvent sentinelEvent) {
         //调用pid控制器
         int simpleCount = simpleStrategy.getNeedUpdateCount(sentinelEvent);
-        int pCount = proportionStrategy.getNeedUpdateCount(sentinelEvent);
-        int iCount = integralStrategy.getNeedUpdateCount(sentinelEvent);
-        int dCount = derivativeStrategy.getNeedUpdateCount(sentinelEvent);
-        System.out.println(" update p == " + pCount + " ,i == " + iCount + " ,d == " + dCount + " reduce == " + simpleCount);
+        int pCount = proportionStrategy.getNeedUpdateCount(sentinelEvent) * p / 100;
+        int iCount = integralStrategy.getNeedUpdateCount(sentinelEvent) * i / 100;
+        int dCount = derivativeStrategy.getNeedUpdateCount(sentinelEvent) * d / 100;
+        System.out.println(" update p == " + pCount + " ,i == " + iCount + " ,d == " + dCount + " simpleCount == " + simpleCount);
         return simpleCount + pCount + iCount + dCount;
     }
 }

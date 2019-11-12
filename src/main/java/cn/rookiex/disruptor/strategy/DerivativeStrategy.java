@@ -15,7 +15,7 @@ public class DerivativeStrategy implements RegulateStrategy {
 
     @Override
     public void regulate(DynamicDisruptor dynamicDisruptor, SentinelEvent sentinelEvent) {
-
+        RegulateStrategy.updateThreadCount(dynamicDisruptor, getNeedUpdateCount(sentinelEvent));
     }
 
     @Override

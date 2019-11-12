@@ -21,7 +21,7 @@ public class DefaultSentinelHandler extends SentinelHandler {
         int id = event.getId();
         String name = event.getName();
         Thread.sleep(20);
-        if (id % 1000 == 0)
+        if (id % 5000 == 0)
             System.out.println(("connect ping == " + id + " name == " + name + "  thread ==> " + Thread.currentThread().getName()));
     }
 }

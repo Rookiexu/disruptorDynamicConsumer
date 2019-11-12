@@ -14,9 +14,7 @@ public class ProportionStrategy implements RegulateStrategy {
 
     @Override
     public void regulate(DynamicDisruptor dynamicDisruptor, SentinelEvent sentinelEvent) {
-        //检测是否需要调节
-        int needUpdateCount = getNeedUpdateCount(sentinelEvent);
-        RegulateStrategy.updateThreadCount(dynamicDisruptor, needUpdateCount);
+        RegulateStrategy.updateThreadCount(dynamicDisruptor, getNeedUpdateCount(sentinelEvent));
     }
 
 
