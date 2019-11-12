@@ -20,9 +20,18 @@ public class PIDStrategy implements RegulateStrategy {
     private int d = 66;
 
     public void setPID(int p, int i, int d) {
-        this.p = p;
-        this.i = i;
-        this.d = d;
+        this.p = checkRange(p);
+        this.i = checkRange(i);
+        this.d = checkRange(d);
+    }
+
+    private int checkRange(int value){
+        if (value > 100){
+            return 100;
+        }else if (value < 0){
+            return 0;
+        }
+        return value;
     }
 
     @Override
