@@ -186,26 +186,6 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
             RingBuffer<HandlerEvent> ringBuffer = disruptor.getRingBuffer();
             SentinelHandler disruptorHandler = createHandler();
             WorkProcessor<HandlerEvent> processor = createProcessor(disruptorHandler);
-
-            WorkProcessor processor1 = processors[nextUnUsed];
-            SentinelHandler handler = handlers[nextUnUsed];
-            //容错,但实际上不应该出现,出现就是严重bug
-            if (processor1 != null || handler != null) {
-                System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                System.out.println("create disruptor thread ,but thread is exits");
-                if (processor1 == null || handler == null) {
-                    System.out.println("create disruptor thread ,handler == " + handler + " ,processor == " + processor);
-                } else {
-                    processor1.halt();
-                    try {
-                        handler.awaitShutdown();
-                    } catch (InterruptedException e) {
-                        System.out.println(e);
-                    }
-                    ringBuffer.removeGatingSequence(processor.getSequence());
-                }
-            }
-
             processors[nextUnUsed] = processor;
             handlers[nextUnUsed] = disruptorHandler;
 
