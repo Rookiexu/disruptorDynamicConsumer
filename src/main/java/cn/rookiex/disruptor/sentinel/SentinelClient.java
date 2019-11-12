@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @Describe :
  * @version: 1.0
  */
-public class SentinelClient implements ThreadStatusInfo,ConsumeStatusInfo {
+public class SentinelClient implements ThreadStatusInfo, ConsumeStatusInfo {
 
     /**
      * 默认一个小窗口大小5秒
@@ -109,15 +109,15 @@ public class SentinelClient implements ThreadStatusInfo,ConsumeStatusInfo {
                 break;
             } else if (time > old.getSecondTime()) {
                 if (updateLock.tryLock()) {
-                    if (time > old.getSecondTime()) {
-                        try {
+                    try {
+                        if (time > old.getSecondTime()) {
                             if (idx % (checkInterval - 1) == 0 && idx != 0)
                                 noticeEvent = getNoticeEvent(time);
                             old.reSet(time);
                             break;
-                        } finally {
-                            updateLock.unlock();
                         }
+                    } finally {
+                        updateLock.unlock();
                     }
                 } else {
                     Thread.yield();
