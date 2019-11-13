@@ -1,7 +1,7 @@
 package cn.rookiex.disruptor.example;
 
 import cn.rookiex.disruptor.core.HandlerFactory;
-import cn.rookiex.disruptor.core.SentinelHandler;
+import cn.rookiex.disruptor.core.AbstractSentinelHandler;
 import cn.rookiex.disruptor.sentinel.SentinelClient;
 
 /**
@@ -15,8 +15,8 @@ public class DefaultHandlerFactory implements HandlerFactory {
     private SentinelClient sentinelClient;
 
     @Override
-    public SentinelHandler createHandler() {
-        return new DefaultSentinelHandler(sentinelClient);
+    public AbstractSentinelHandler createHandler() {
+        return new DefaultAbstractSentinelHandler(sentinelClient);
     }
 
     @Override

@@ -111,8 +111,9 @@ public class SentinelClient implements ThreadStatusInfo, ConsumeStatusInfo {
                 if (updateLock.tryLock()) {
                     try {
                         if (time > old.getSecondTime()) {
-                            if (idx % (checkInterval - 1) == 0 && idx != 0)
+                            if (idx % (checkInterval - 1) == 0 && idx != 0) {
                                 noticeEvent = getNoticeEvent(time);
+                            }
                             old.reSet(time);
                             break;
                         }

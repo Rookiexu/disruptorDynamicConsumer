@@ -7,6 +7,7 @@ package cn.rookiex.disruptor.sentinel;
  * @version: 1.0
  */
 public interface ThreadStatusInfo {
+
     void threadRun();
 
     void threadWait();

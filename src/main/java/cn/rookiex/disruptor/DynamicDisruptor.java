@@ -1,15 +1,11 @@
 package cn.rookiex.disruptor;
 
-import cn.rookiex.disruptor.core.HandlerFactory;
-import cn.rookiex.disruptor.core.SentinelHandler;
-import cn.rookiex.disruptor.core.DynamicConsumer;
-import cn.rookiex.disruptor.core.HandlerEvent;
+import cn.rookiex.disruptor.core.*;
 import cn.rookiex.disruptor.example.DefaultHandlerFactory;
 import cn.rookiex.disruptor.sentinel.SentinelClient;
 import cn.rookiex.disruptor.sentinel.SentinelEvent;
 import cn.rookiex.disruptor.sentinel.SentinelListener;
 import cn.rookiex.disruptor.strategy.PIDStrategy;
-import cn.rookiex.disruptor.strategy.ProportionStrategy;
 import cn.rookiex.disruptor.strategy.RegulateStrategy;
 import com.lmax.disruptor.*;
 import com.lmax.disruptor.dsl.Disruptor;
@@ -75,7 +71,7 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
     /**
      * 工作的handler数组,和processor数组一一对应
      */
-    private SentinelHandler[] handlers;
+    private AbstractSentinelHandler[] handlers;
 
     /**
      * 和processor,handler一一对应,标识位置上是否空闲,用Atomic封装了cas操作
@@ -107,9 +103,6 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
      */
     private RegulateStrategy strategy = new PIDStrategy();
 
-    public Disruptor<HandlerEvent> getDisruptor() {
-        return disruptor;
-    }
 
     public ExceptionHandler<HandlerEvent> getExceptionHandler() {
         return exceptionHandler;
@@ -119,14 +112,14 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
         this.exceptionHandler = exceptionHandler;
     }
 
-    public void init(int bufferSize, SentinelClient sentinelClient, HandlerFactory handlerFactory) {
+    public void init(int bufferSize, SentinelClient sentinelClient, HandlerFactory handlerFactory, EventFactory<HandlerEvent> dynamicEventFactory) {
         this.handlerFactory = handlerFactory;
         init(bufferSize, sentinelClient);
     }
 
     public void init(int bufferSize, SentinelClient sentinelClient) {
         this.processors = new WorkProcessor[maxSize];
-        this.handlers = new SentinelHandler[maxSize];
+        this.handlers = new AbstractSentinelHandler[maxSize];
         this.availableArray = new AtomicIntegerArray(maxSize);
         this.sentinelClient = sentinelClient;
         this.handlerFactory.setSentinelClient(sentinelClient);
@@ -148,7 +141,7 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
         });
 
         for (int i = 0; i < initSize; i++) {
-            SentinelHandler handlerEvent = createHandler();
+            AbstractSentinelHandler handlerEvent = createHandler();
             handlers[i] = handlerEvent;
             processors[i] = createProcessor(handlerEvent);
             updateUseState(i, USED);
@@ -167,11 +160,11 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
         }
     }
 
-    private SentinelHandler createHandler() {
+    private AbstractSentinelHandler createHandler() {
         return handlerFactory.createHandler();
     }
 
-    private WorkProcessor<HandlerEvent> createProcessor(SentinelHandler disruptorHandler) {
+    private WorkProcessor<HandlerEvent> createProcessor(AbstractSentinelHandler disruptorHandler) {
         RingBuffer<HandlerEvent> ringBuffer = disruptor.getRingBuffer();
         return new WorkProcessor<>(ringBuffer, ringBuffer.newBarrier(), disruptorHandler, exceptionHandler, workSequence);
     }
@@ -184,7 +177,7 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
             System.out.println("no available index exits ==> ");
         } else {
             RingBuffer<HandlerEvent> ringBuffer = disruptor.getRingBuffer();
-            SentinelHandler disruptorHandler = createHandler();
+            AbstractSentinelHandler disruptorHandler = createHandler();
             WorkProcessor<HandlerEvent> processor = createProcessor(disruptorHandler);
             processors[nextUnUsed] = processor;
             handlers[nextUnUsed] = disruptorHandler;
@@ -204,7 +197,7 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
         } else {
             RingBuffer<HandlerEvent> ringBuffer = disruptor.getRingBuffer();
             WorkProcessor processor = processors[nextUnUsed];
-            SentinelHandler handler = handlers[nextUnUsed];
+            AbstractSentinelHandler handler = handlers[nextUnUsed];
             if (processor == null || handler == null) {
                 System.out.println("remove disruptor thread ,handler == " + handler + " ,processor == " + processor);
             }

@@ -1,6 +1,6 @@
 package cn.rookiex.disruptor.example;
 
-import cn.rookiex.disruptor.core.SentinelHandler;
+import cn.rookiex.disruptor.core.AbstractSentinelHandler;
 import cn.rookiex.disruptor.core.HandlerEvent;
 import cn.rookiex.disruptor.sentinel.SentinelClient;
 
@@ -10,9 +10,9 @@ import cn.rookiex.disruptor.sentinel.SentinelClient;
  * @Describe :
  * @version:
  */
-public class DefaultSentinelHandler extends SentinelHandler {
+public class DefaultAbstractSentinelHandler extends AbstractSentinelHandler {
 
-    public DefaultSentinelHandler(SentinelClient sentinelClient) {
+    public DefaultAbstractSentinelHandler(SentinelClient sentinelClient) {
         super(sentinelClient);
     }
 

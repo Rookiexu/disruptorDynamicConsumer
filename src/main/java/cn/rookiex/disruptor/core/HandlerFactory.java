@@ -1,6 +1,5 @@
 package cn.rookiex.disruptor.core;
 
-import cn.rookiex.disruptor.core.SentinelHandler;
 import cn.rookiex.disruptor.sentinel.SentinelClient;
 
 /**
@@ -10,7 +9,14 @@ import cn.rookiex.disruptor.sentinel.SentinelClient;
  * @version: 1.0
  */
 public interface HandlerFactory {
-    SentinelHandler createHandler();
+    /**
+     * @return 创建handler
+     */
+    AbstractSentinelHandler createHandler();
 
+    /**
+     * @param sentinelClient s
+     * 设置
+     */
     void setSentinelClient(SentinelClient sentinelClient);
 }
