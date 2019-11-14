@@ -1,7 +1,6 @@
 package cn.rookiex.disruptor;
 
 import cn.rookiex.disruptor.core.*;
-import cn.rookiex.disruptor.example.DefaultHandlerFactory;
 import cn.rookiex.disruptor.sentinel.SentinelClient;
 import cn.rookiex.disruptor.sentinel.SentinelEvent;
 import cn.rookiex.disruptor.sentinel.SentinelListener;
@@ -96,7 +95,7 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
     /**
      * handler 工厂
      */
-    private HandlerFactory handlerFactory = new DefaultHandlerFactory();
+    private HandlerFactory handlerFactory;
 
     /**
      * 默认的处理策略是比例控制
@@ -112,12 +111,12 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
         this.exceptionHandler = exceptionHandler;
     }
 
-    public void init(int bufferSize, SentinelClient sentinelClient, HandlerFactory handlerFactory, EventFactory<HandlerEvent> dynamicEventFactory) {
+    public void init(int bufferSize, SentinelClient sentinelClient, HandlerFactory handlerFactory) {
         this.handlerFactory = handlerFactory;
         init(bufferSize, sentinelClient);
     }
 
-    public void init(int bufferSize, SentinelClient sentinelClient) {
+   private void init(int bufferSize, SentinelClient sentinelClient) {
         this.processors = new WorkProcessor[maxSize];
         this.handlers = new AbstractSentinelHandler[maxSize];
         this.availableArray = new AtomicIntegerArray(maxSize);

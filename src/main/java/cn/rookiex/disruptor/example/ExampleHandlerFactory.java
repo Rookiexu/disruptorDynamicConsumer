@@ -10,13 +10,13 @@ import cn.rookiex.disruptor.sentinel.SentinelClient;
  * @Describe :
  * @version:
  */
-public class DefaultHandlerFactory implements HandlerFactory {
+public class ExampleHandlerFactory implements HandlerFactory {
 
     private SentinelClient sentinelClient;
 
     @Override
     public AbstractSentinelHandler createHandler() {
-        return new DefaultAbstractSentinelHandler(sentinelClient);
+        return new ExampleSentinelHandler(sentinelClient);
     }
 
     @Override

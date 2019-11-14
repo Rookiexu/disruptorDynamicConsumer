@@ -10,9 +10,9 @@ import cn.rookiex.disruptor.sentinel.SentinelClient;
  * @Describe :
  * @version:
  */
-public class DefaultAbstractSentinelHandler extends AbstractSentinelHandler {
+public class ExampleSentinelHandler extends AbstractSentinelHandler {
 
-    public DefaultAbstractSentinelHandler(SentinelClient sentinelClient) {
+    public ExampleSentinelHandler(SentinelClient sentinelClient) {
         super(sentinelClient);
     }
 
