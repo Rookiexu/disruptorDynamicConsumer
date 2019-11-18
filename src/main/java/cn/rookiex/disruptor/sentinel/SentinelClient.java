@@ -3,6 +3,9 @@ package cn.rookiex.disruptor.sentinel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
@@ -103,7 +106,6 @@ public class SentinelClient implements ThreadStatusInfo, ConsumeStatusInfo {
         int idx = (int) (timeId % windowsSize);
         time = time - time % windowsLength;
         Window old = windows[idx];
-        SentinelEvent noticeEvent = null;
         while (true) {
             if (time == old.getSecondTime()) {
                 break;
@@ -111,9 +113,6 @@ public class SentinelClient implements ThreadStatusInfo, ConsumeStatusInfo {
                 if (updateLock.tryLock()) {
                     try {
                         if (time > old.getSecondTime()) {
-                            if (idx % (checkInterval - 1) == 0 && idx != 0) {
-                                noticeEvent = getNoticeEvent(time);
-                            }
                             old.reSet(time);
                             break;
                         }
@@ -125,12 +124,10 @@ public class SentinelClient implements ThreadStatusInfo, ConsumeStatusInfo {
                 }
             }
         }
-        if (noticeEvent != null) {
-            SentinelEvent finalNoticeEvent = noticeEvent;
-            listenerList.forEach(listenerList -> {
-                CompletableFuture.runAsync(() -> listenerList.notice(finalNoticeEvent));
-            });
-        }
+
+//        if (idx % (checkInterval - 1) == 0 && idx != 0) {
+//            check();
+//        }
         return old;
     }
 
@@ -209,4 +206,19 @@ public class SentinelClient implements ThreadStatusInfo, ConsumeStatusInfo {
         totalThreadCount.decrementAndGet();
     }
 
+    private void check() {
+        long time = System.currentTimeMillis();
+        time = time - time % windowsLength;
+        SentinelEvent noticeEven= getNoticeEvent(time);
+        listenerList.forEach(listenerList -> CompletableFuture.runAsync(() -> listenerList.notice(noticeEven)));
+    }
+
+    public void start() {
+        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, (r) -> {
+            Thread thread = new Thread(r);
+            thread.setName("SentinelThread");
+            return thread;
+        });
+        scheduledThreadPoolExecutor.scheduleAtFixedRate(this::check,5,5, TimeUnit.SECONDS);
+    }
 }

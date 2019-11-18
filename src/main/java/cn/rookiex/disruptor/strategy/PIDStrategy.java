@@ -16,7 +16,7 @@ public class PIDStrategy implements RegulateStrategy {
     private SimpleStrategy simpleStrategy = new SimpleStrategy();
 
     private int p = 66;
-    private int i = 66;
+    private int i = 100;
     private int d = 66;
 
     public void setPID(int p, int i, int d) {

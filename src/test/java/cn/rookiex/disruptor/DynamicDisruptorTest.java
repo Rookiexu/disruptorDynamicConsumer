@@ -28,9 +28,9 @@ public class DynamicDisruptorTest {
 
         try {
             for (int i = 0; i < produceSize; i++) {
-                Thread.sleep(5000);
+                Thread.sleep(500);
                 System.out.println("添加生产者========================>" + i);
-                startPublishEvent(countDownLatch, 100000, "produce=" + i);
+                startPublishEvent(countDownLatch, 5001, "produce=" + i);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();

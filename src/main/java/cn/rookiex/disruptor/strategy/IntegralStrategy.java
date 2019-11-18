@@ -22,11 +22,13 @@ public class IntegralStrategy implements RegulateStrategy {
         int recentConsumeCount = sentinelEvent.getRecentConsumeCount();
         int runThreadCount = sentinelEvent.getRunThreadCount();
         int totalThreadCount = sentinelEvent.getTotalThreadCount();
-        if (totalThreadCount == runThreadCount){
-            if (totalDifference > recentConsumeCount){
+        if (totalThreadCount == runThreadCount) {
+            if (totalDifference > recentConsumeCount) {
                 //保留两位小数
-                int needAddThread = (totalDifference * 100 / recentConsumeCount * runThreadCount)  / 100 - runThreadCount;
+                int needAddThread = (totalDifference * 100 / recentConsumeCount * runThreadCount) / 100 - runThreadCount;
                 updateCount += needAddThread;
+            } else if (totalDifference > 0) {
+                updateCount += 1;
             }
         }
         return updateCount;

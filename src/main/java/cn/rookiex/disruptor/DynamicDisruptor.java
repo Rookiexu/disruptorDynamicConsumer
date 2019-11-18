@@ -139,24 +139,24 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
             return t;
         });
 
-        for (int i = 0; i < initSize; i++) {
-            AbstractSentinelHandler handlerEvent = createHandler();
-            handlers[i] = handlerEvent;
-            processors[i] = createProcessor(handlerEvent);
-            updateUseState(i, USED);
-        }
+
 
         disruptor.start();
     }
 
     public void start() {
         RingBuffer<HandlerEvent> ringBuffer = disruptor.getRingBuffer();
-        for (WorkProcessor processor : processors) {
-            if (processor != null) {
-                ringBuffer.addGatingSequences(processor.getSequence());
-                executor.execute(processor);
-            }
+
+        for (int i = 0; i < initSize; i++) {
+            AbstractSentinelHandler handlerEvent = createHandler();
+            handlers[i] = handlerEvent;
+            processors[i] = createProcessor(handlerEvent);
+            updateUseState(i, USED);
+            ringBuffer.addGatingSequences(processors[i].getSequence());
+            executor.execute(processors[i]);
         }
+
+        sentinelClient.start();
     }
 
     private AbstractSentinelHandler createHandler() {
@@ -192,7 +192,7 @@ public class DynamicDisruptor implements DynamicConsumer, SentinelListener {
         int nextUnUsed = getNextUsed();
         if (nextUnUsed == -1) {
             //已经小于等于核心数量的时候
-            System.out.println("used thread less than core size");
+//            System.out.println("used thread less than core size");
         } else {
             RingBuffer<HandlerEvent> ringBuffer = disruptor.getRingBuffer();
             WorkProcessor processor = processors[nextUnUsed];
