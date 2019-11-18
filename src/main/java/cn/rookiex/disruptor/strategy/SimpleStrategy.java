@@ -35,7 +35,7 @@ public class SimpleStrategy implements RegulateStrategy {
 
         if (runThreadCount == totalThreadCount) {
             if (sentinelEvent.getRecentProduceCount() > sentinelEvent.getRecentConsumeCount()) {
-                updateCount += 2;
+                updateCount += 1;
             }
         }
 
