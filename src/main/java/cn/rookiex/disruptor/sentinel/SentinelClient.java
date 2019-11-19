@@ -58,7 +58,11 @@ public class SentinelClient implements ThreadStatusInfo, ConsumeStatusInfo {
     /**
      * 延时线程
      * */
-    private static ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
+    private static ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(2, (r) -> {
+        Thread thread = new Thread(r);
+        thread.setName("SentinelThread");
+        return thread;
+    });
 
     //暂时不用,因为滑动窗口算法,在策略算法的反馈上会有延迟误差,导致频繁增减线程
     @Deprecated
@@ -89,11 +93,6 @@ public class SentinelClient implements ThreadStatusInfo, ConsumeStatusInfo {
         for (int i = 0; i < windowsSize; i++) {
             windows[i] = new Window();
         }
-        scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(2, (r) -> {
-            Thread thread = new Thread(r);
-            thread.setName("SentinelThread");
-            return thread;
-        });
     }
 
     public void addListener(SentinelListener sentinelListener) {
