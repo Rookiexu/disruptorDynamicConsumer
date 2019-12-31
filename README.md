@@ -85,6 +85,14 @@ disruptor的动态消费者实现
 	server.setExceptionHandler(exceptionHandler);
 
 
+    //处理类继承AbstractSentinelHandler
+    
+    @Override
+    public void deal(HandlerEvent event) throws Exception {
+        int id = event.getId();
+        //do sth
+    }
+
 	
 	
 
