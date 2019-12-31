@@ -3,7 +3,9 @@ disruptor的动态消费者实现
 
 ## 版本补丁
 
-20191231 最近有朋友向我咨询了一个消费者扣除之后不能在处理消息的bug,这个问题实际上是因为删除消费者的时候,disruptor会丢失一个消息,在浏览器端感觉就是有消息被阻塞了
+20191231 如果需要使用这个项目需要对disruptor进行一些修改!!!
+
+最近有朋友向我咨询了一个消费者扣除之后不能在处理消息的bug,这个问题实际上是因为删除消费者的时候,disruptor会丢失一个消息,在浏览器端感觉就是有消息被阻塞了.具体可以参考我给disruptor的pr=>[https://github.com/LMAX-Exchange/disruptor/pull/287](https://github.com/LMAX-Exchange/disruptor/pull/287 "pull request")
 
 ## 动态消费者 ##
 
@@ -23,7 +25,7 @@ disruptor的动态消费者实现
 
 ## 项目实现
 
-路径-> 
+路径-> [https://github.com/Rookiexu/disruptorDynamicConsumer/blob/master/doc/HowToWork.md](https://github.com/Rookiexu/disruptorDynamicConsumer/blob/master/doc/HowToWork.md "how to work")
 
 ## 基本思路 ##
 
